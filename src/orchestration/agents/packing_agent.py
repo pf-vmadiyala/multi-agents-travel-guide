@@ -52,7 +52,7 @@ async def generate_packing_list(destination: str, interests: list[str], weather_
     ])
     
     # 3. Create the execution chain
-    chain = prompt | llm
+    chain = (prompt | llm).with_config({"run_name": "Packing_List_Generator"})
     
     try:
         # 4. Invoke the model

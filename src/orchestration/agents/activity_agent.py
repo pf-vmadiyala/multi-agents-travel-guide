@@ -161,7 +161,7 @@ async def get_activities(location: str, interests: list[str]) -> str:
                 ))
             ])
             
-            chain = prompt | llm
+            chain = (prompt | llm).with_config({"run_name": "Activity_Curator"})
             response = await chain.ainvoke({
                 "destination": location,
                 "interests": ", ".join(interests),

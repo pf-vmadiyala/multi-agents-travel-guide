@@ -119,7 +119,7 @@ async def generate_safety_report(destination: str) -> str:
                 ))
             ])
             
-            chain = prompt | llm
+            chain = (prompt | llm).with_config({"run_name": "Safety_Report_Generator"})
             response = await chain.ainvoke({
                 "destination": destination,
                 "country_name": country_name,

@@ -188,7 +188,7 @@ async def get_hotels(location: str, check_in: str, check_out: str, preferences: 
                 ))
             ])
             
-            chain = prompt | llm
+            chain = (prompt | llm).with_config({"run_name": "Hotel_Curator"})
             response = await chain.ainvoke({
                 "location": location,
                 "check_in": check_in,

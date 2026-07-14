@@ -224,7 +224,19 @@ if __name__ == "__main__":
         print("=== LAUNCHING TRAVEL PLANNER ORCHESTRATOR ===")
         print(f"Planning trip to: {inputs['destination']} for {inputs['departure_date']} to {inputs['return_date']}\n")
 
-        final_state = await travel_planner_app.ainvoke(inputs)
+        # Custom config tags and metadata for LangSmith tracing
+        config = {
+            "run_name": f"TravelPlanner_{inputs['destination'].replace(', ', '_')}",
+            "tags": [inputs["destination"], "CLI-Test"],
+            "metadata": {
+                "destination": inputs["destination"],
+                "origin": inputs["origin"],
+                "departure_date": inputs["departure_date"],
+                "return_date": inputs["return_date"]
+            }
+        }
+
+        final_state = await travel_planner_app.ainvoke(inputs, config=config)
 
         print("\n=== COMPILING COMPLETE ITINERARY RESULT ===")
         print(json.dumps(final_state["compiled_itinerary"], indent=2))

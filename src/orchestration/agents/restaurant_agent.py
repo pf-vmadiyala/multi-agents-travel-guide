@@ -175,7 +175,7 @@ async def get_restaurants(location: str, cuisines: list[str]) -> str:
                 ))
             ])
             
-            chain = prompt | llm
+            chain = (prompt | llm).with_config({"run_name": "Restaurant_Curator"})
             response = await chain.ainvoke({
                 "destination": location,
                 "cuisines": ", ".join(cuisines),

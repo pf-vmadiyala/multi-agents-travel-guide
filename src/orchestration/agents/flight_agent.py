@@ -147,7 +147,7 @@ async def get_flights(origin: str, destination: str, departure_date: str, return
             ))
         ])
         
-        chain = prompt | llm
+        chain = (prompt | llm).with_config({"run_name": "Flight_Curator"})
         response = await chain.ainvoke({
             "origin": origin,
             "destination": destination,
