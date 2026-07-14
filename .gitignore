@@ -1,0 +1,13 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.env
+
+# Virtual environments
+.venv
+MULTI_AGENT_TRAVEL_PLANNER_LLD_v2_1.md
+notes.txt
