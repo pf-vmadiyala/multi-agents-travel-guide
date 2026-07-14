@@ -98,8 +98,7 @@ async def get_restaurants(location: str, cuisines: list[str]) -> str:
             lat = resolved_match["latitude"]
             lon = resolved_match["longitude"]
 
-            # 2. Query OpenStreetMap's Overpass API for restaurants/cafes within 1.5km
-            overpass_url = "https://lz4.overpass-api.de/api/interpreter"
+            # 2. Query OpenStreetMap's Overpass API for restaurants/cafes within 1.5km (with fallback mirrors)
             overpass_query = f"""[out:json];
             (
               node["amenity"="restaurant"](around:1500, {lat}, {lon});
@@ -110,9 +109,28 @@ async def get_restaurants(location: str, cuisines: list[str]) -> str:
             headers = {
                 "User-Agent": "MultiAgentTravelPlanner/1.0 (contact@example.com)"
             }
-            response = await client.post(overpass_url, data={"data": overpass_query}, headers=headers, timeout=15.0)
-            response.raise_for_status()
-            osm_data = response.json()
+            
+            overpass_mirrors = [
+                "https://lz4.overpass-api.de/api/interpreter",
+                "https://overpass.kumi.systems/api/interpreter",
+                "https://overpass.osm.ch/api/interpreter"
+            ]
+            
+            osm_data = None
+            last_err = None
+            for mirror in overpass_mirrors:
+                try:
+                    response = await client.post(mirror, data={"data": overpass_query}, headers=headers, timeout=10.0)
+                    response.raise_for_status()
+                    osm_data = response.json()
+                    break  # Success, exit loop
+                except Exception as e:
+                    last_err = e
+                    continue
+            
+            if not osm_data:
+                raise Exception(f"All Overpass API mirrors failed. Last error: {str(last_err)}")
+                
             elements = osm_data.get("elements", [])
             
             if not elements:

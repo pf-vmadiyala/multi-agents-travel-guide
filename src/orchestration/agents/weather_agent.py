@@ -40,22 +40,35 @@ async def get_weather_forecast(location: str, dates: list[str]) -> str:
     try:
         async with httpx.AsyncClient() as client:
             # 1. Resolve location string to geographic coordinates
+            parts = [p.strip() for p in location.split(",")]
+            search_name = parts[0]
+            
             geocode_url = "https://geocoding-api.open-meteo.com/v1/search"
             geocode_response = await client.get(
                 geocode_url, 
-                params={"name": location, "count": 1},
+                params={"name": search_name, "count": 10},
                 timeout=10.0
             )
             geocode_response.raise_for_status()
             geocode_data = geocode_response.json()
             
-            # Verify coordinates were returned
-            if not geocode_data.get("results"):
+            results = geocode_data.get("results")
+            if not results:
                 return json.dumps({"error": f"Could not geocode location: '{location}'"})
                 
-            first_match = geocode_data["results"][0]
-            lat = first_match["latitude"]
-            lon = first_match["longitude"]
+            resolved_match = results[0]
+            if len(parts) > 1:
+                context = parts[1].lower()
+                for match in results:
+                    admin1 = match.get("admin1", "").lower()
+                    country = match.get("country", "").lower()
+                    country_code = match.get("country_code", "").lower()
+                    if context in admin1 or context in country or context == country_code:
+                        resolved_match = match
+                        break
+                        
+            lat = resolved_match["latitude"]
+            lon = resolved_match["longitude"]
             
             # 2. Fetch the weather forecast for resolved coordinates
             forecast_url = "https://api.open-meteo.com/v1/forecast"
