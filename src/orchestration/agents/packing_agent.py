@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from langchain_core.prompts import ChatPromptTemplate
 from src.orchestration.agents.base import get_llm
 
@@ -19,11 +20,16 @@ Follow these rules:
 4. Output ONLY the raw JSON object. Do not write conversational prefaces or conclusions. Do not wrap the JSON in markdown code blocks (like ```json). Just start with {{ and end with }}.
 """
 
-def clean_json_string(text: str) -> str:
+def clean_json_string(text: Any) -> str:
     """
     Cleans up any markdown wrappers (like ```json ... ```) 
     that the LLM might have output around the raw JSON.
     """
+    if isinstance(text, list):
+        text = "".join([block.get("text", "") if isinstance(block, dict) else str(block) for block in text])
+    elif not isinstance(text, str):
+        text = str(text)
+
     text = text.strip()
     if text.startswith("```json"):
         text = text[7:]

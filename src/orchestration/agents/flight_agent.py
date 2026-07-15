@@ -1,6 +1,7 @@
 import os
 import json
 import httpx
+from typing import Any
 from langchain_core.tools import tool
 from langchain_core.prompts import ChatPromptTemplate
 from src.orchestration.agents.base import get_llm
@@ -34,11 +35,16 @@ Rules:
 4. Output ONLY the raw JSON object. Do not write conversational prefaces or conclusions. Do not wrap the JSON in markdown code blocks (like ```json). Just start with {{ and end with }}.
 """
 
-def clean_json_string(text: str) -> str:
+def clean_json_string(text: Any) -> str:
     """
     Finds the first opening brace and last closing brace in the text
     and extracts only the JSON string. Discards any conversational text around it.
     """
+    if isinstance(text, list):
+        text = "".join([block.get("text", "") if isinstance(block, dict) else str(block) for block in text])
+    elif not isinstance(text, str):
+        text = str(text)
+
     text = text.strip()
     first_brace = text.find('{')
     if first_brace == -1:

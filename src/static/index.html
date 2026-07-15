@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroRoute - Multi-Agent Travel Planner</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS stylesheet -->
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <!-- Background blur spots -->
+    <div class="bg-glow spot-1"></div>
+    <div class="bg-glow spot-2"></div>
+
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">✦</span> AeroRoute
+            </div>
+            <div id="user-profile" class="hidden">
+                <span id="current-username">user@example.com</span>
+                <button id="logout-btn" class="btn btn-secondary btn-sm">Sign Out</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 1. AUTHENTICATION PANEL -->
+        <section id="auth-section" class="card glass">
+            <div class="auth-tabs">
+                <button id="tab-login" class="auth-tab active">Log In</button>
+                <button id="tab-register" class="auth-tab">Register</button>
+            </div>
+
+            <div id="auth-forms">
+                <!-- Login form -->
+                <form id="login-form" class="auth-form">
+                    <h2>Welcome Back</h2>
+                    <p class="subtitle">Log in to view or plan your custom itineraries</p>
+                    
+                    <div class="form-group">
+                        <label for="login-email">Email Address</label>
+                        <input type="email" id="login-email" required placeholder="name@domain.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Log In</button>
+                </form>
+
+                <!-- Register form -->
+                <form id="register-form" class="auth-form hidden">
+                    <h2>Create Account</h2>
+                    <p class="subtitle">Sign up for a free AeroRoute travel planner account</p>
+                    
+                    <div class="form-group">
+                        <label for="register-email">Email Address</label>
+                        <input type="email" id="register-email" required placeholder="name@domain.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" required placeholder="Min 6 characters">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+                </form>
+            </div>
+            <div id="auth-error" class="error-alert hidden"></div>
+        </section>
+
+        <!-- 2. PLANNING FORM PANEL -->
+        <section id="planner-section" class="card glass hidden">
+            <div class="planner-header">
+                <h1>Where to next?</h1>
+                <p>Enter your details and let our AI specialist agents curate a personalized itinerary for you.</p>
+            </div>
+
+            <form id="planner-form">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="origin">Starting City (Origin)</label>
+                        <input type="text" id="origin" required placeholder="e.g. Chicago">
+                    </div>
+                    <div class="form-group">
+                        <label for="destination">Destination</label>
+                        <input type="text" id="destination" required placeholder="e.g. Broken Bow, Oklahoma">
+                    </div>
+                </div>
+
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label for="departure_date">Departure Date</label>
+                        <input type="date" id="departure_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="return_date">Return Date</label>
+                        <input type="date" id="return_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="budget">Budget (USD)</label>
+                        <input type="number" id="budget" required min="1" placeholder="e.g. 2500">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="travel_style">Travel Style</label>
+                        <select id="travel_style">
+                            <option value="budget">Budget-Friendly</option>
+                            <option value="mid-range" selected>Mid-Range Comfort</option>
+                            <option value="luxury">Luxury / Premium</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="party_size">Party Size (Travelers)</label>
+                        <input type="number" id="party_size" required min="1" value="2">
+                    </div>
+                </div>
+
+                <!-- Interests Checkboxes -->
+                <div class="form-group">
+                    <label>Interests & Activities</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="interests" value="nature" checked>
+                            <span class="chk-label">🌲 Nature</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="interests" value="hiking" checked>
+                            <span class="chk-label">🥾 Hiking</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="interests" value="shopping">
+                            <span class="chk-label">🛍️ Shopping</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="interests" value="food" checked>
+                            <span class="chk-label">🍕 Food</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="interests" value="history">
+                            <span class="chk-label">🏛️ History</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="interests" value="museums">
+                            <span class="chk-label">🎨 Art & Museums</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Cuisines Checkboxes -->
+                <div class="form-group">
+                    <label>Dining Preferences (Cuisines)</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="cuisines" value="coffee" checked>
+                            <span class="chk-label">☕ Cafe & Coffee</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="cuisines" value="bbq" checked>
+                            <span class="chk-label">🍖 BBQ / Grill</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="cuisines" value="local" checked>
+                            <span class="chk-label">🥗 Local Dining</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="cuisines" value="fine-dining">
+                            <span class="chk-label">🥂 Fine Dining</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="planner-error" class="error-alert hidden"></div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <span class="btn-icon">✦</span> Generate AI Travel Plan
+                </button>
+            </form>
+        </section>
+
+        <!-- 3. LOADER & STATUS SCREEN -->
+        <section id="loading-section" class="card glass hidden">
+            <div class="loader-content">
+                <div class="spinner-container">
+                    <div class="double-spinner"></div>
+                    <div class="spinner-logo">✦</div>
+                </div>
+                <h2>Orchestrating Specialist Agents...</h2>
+                <p class="subtitle">Our multi-agent graph is compiling weather, flights, lodging, safety, and local recommendations.</p>
+                
+                <div class="status-tracker">
+                    <div class="status-step" id="step-task">
+                        <span class="step-bullet">●</span> Queuing planning job...
+                    </div>
+                    <div class="status-step" id="step-agents">
+                        <span class="step-bullet">●</span> Resolving local weather, maps & safety...
+                    </div>
+                    <div class="status-step" id="step-curating">
+                        <span class="step-bullet">●</span> Curating travel options...
+                    </div>
+                    <div class="status-step" id="step-budget">
+                        <span class="step-bullet">●</span> Reconciling budget constraints...
+                    </div>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div id="progress-bar-fill" class="progress-bar-fill"></div>
+                </div>
+                <div class="status-timer">Elapsed time: <span id="timer-val">0</span>s (rate limits may retry)</div>
+            </div>
+        </section>
+
+        <!-- 4. COMPLETED ITINERARY DASHBOARD -->
+        <section id="dashboard-section" class="hidden">
+            <div class="dashboard-header card glass">
+                <div class="header-details">
+                    <button id="back-to-form-btn" class="btn btn-secondary btn-sm mb-1">← Plan Another Trip</button>
+                    <h1 id="dashboard-dest">Paris, France</h1>
+                    <p class="subtitle"><span id="dashboard-origin">Chicago</span> • <span id="dashboard-dates">Oct 12 - Oct 19</span> • <span id="dashboard-party">2 Guests</span></p>
+                </div>
+                <div class="budget-badge" id="budget-status-card">
+                    <div class="budget-title">Remaining Budget</div>
+                    <div class="budget-value" id="dashboard-budget-rem">$0.00</div>
+                    <div class="budget-percent" id="dashboard-budget-pct">0% used</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Navigation Tabs -->
+            <div class="dashboard-nav card glass">
+                <button class="nav-tab active" data-tab="tab-overview">📊 Summary</button>
+                <button class="nav-tab" data-tab="tab-schedule">🗓️ Schedule</button>
+                <button class="nav-tab" data-tab="tab-logistics">✈️ Lodging & Flight</button>
+                <button class="nav-tab" data-tab="tab-safety">🌦️ Weather & Safety</button>
+                <button class="nav-tab" data-tab="tab-packing">🧳 Packing List</button>
+            </div>
+
+            <!-- Tab Content Sheets -->
+            <div class="tab-content-container">
+                <!-- Tab Overview -->
+                <div id="tab-overview" class="tab-sheet active">
+                    <div class="grid-2">
+                        <div class="card glass inner-card">
+                            <h3>Cost Distribution</h3>
+                            <div class="cost-summary-list">
+                                <div class="cost-row">
+                                    <span>✈️ Flight Tickets:</span>
+                                    <strong id="summary-cost-flights">$0.00</strong>
+                                </div>
+                                <div class="cost-row">
+                                    <span>🏨 Hotel Stay:</span>
+                                    <strong id="summary-cost-hotels">$0.00</strong>
+                                </div>
+                                <div class="cost-row">
+                                    <span>🎟️ Activities & Attractions:</span>
+                                    <strong id="summary-cost-activities">$0.00</strong>
+                                </div>
+                                <div class="cost-row">
+                                    <span>🍔 Food & Dining:</span>
+                                    <strong id="summary-cost-food">$0.00</strong>
+                                </div>
+                                <hr class="dashed-hr">
+                                <div class="cost-row total-row">
+                                    <span>💰 Total Spent:</span>
+                                    <strong id="summary-cost-total">$0.00</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card glass inner-card advisory-summary-card">
+                            <h3>Safety & Advisories</h3>
+                            <div id="summary-safety-block">
+                                <div class="advisory-badge" id="summary-safety-level">Low Risk</div>
+                                <p id="summary-safety-desc">Loading safety advisory...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Highlight sections -->
+                    <div class="card glass inner-card mt-2">
+                        <h3>Key Highlights</h3>
+                        <p class="subtitle">Recommended sights and dining spots selected for your interests</p>
+                        <div class="grid-2 mt-1" id="overview-highlights">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Schedule -->
+                <div id="tab-schedule" class="tab-sheet">
+                    <div class="timeline-container" id="schedule-timeline">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Tab Logistics -->
+                <div id="tab-logistics" class="tab-sheet">
+                    <div class="grid-2">
+                        <div class="card glass inner-card">
+                            <h3>✈️ Recommended Flight Options</h3>
+                            <div id="flights-container" class="card-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="card glass inner-card">
+                            <h3>🏨 Lodging & Hotel Stays</h3>
+                            <div id="hotels-container" class="card-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Safety -->
+                <div id="tab-safety" class="tab-sheet">
+                    <div class="grid-2">
+                        <div class="card glass inner-card">
+                            <h3>🌦️ Weather Forecast</h3>
+                            <table class="weather-table">
+                               <thead>
+                                   <tr>
+                                       <th>Date</th>
+                                       <th>Condition & Description</th>
+                                       <th>Suitability</th>
+                                   </tr>
+                               </thead>
+                               <tbody id="weather-tbody">
+                                   <!-- Populated dynamically -->
+                               </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card glass inner-card">
+                            <h3>🚨 Safety Details & Emergency Contacts</h3>
+                            <div class="safety-box">
+                                <div class="safety-item">
+                                    <span>Advisory Source:</span>
+                                    <strong id="safety-source">State Dept</strong>
+                                </div>
+                                <div class="safety-item">
+                                    <span>Police Emergency:</span>
+                                    <strong class="police-num" id="safety-police">911</strong>
+                                </div>
+                                <div class="safety-item">
+                                    <span>Ambulance Emergency:</span>
+                                    <strong class="ambulance-num" id="safety-ambulance">911</strong>
+                                </div>
+                                <div class="safety-bulletins mt-2">
+                                    <h4>Details</h4>
+                                    <p id="safety-full-desc">No warnings generated.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Packing -->
+                <div id="tab-packing" class="tab-sheet">
+                    <div class="grid-3">
+                        <div class="card glass inner-card">
+                            <h4>📋 Base Essentials</h4>
+                            <div class="checklist" id="packing-base">
+                                <!-- Checkboxes populated dynamically -->
+                            </div>
+                        </div>
+                        <div class="card glass inner-card">
+                            <h4>🌦️ Weather Adjustments</h4>
+                            <div class="checklist" id="packing-weather">
+                                <!-- Checkboxes populated dynamically -->
+                            </div>
+                        </div>
+                        <div class="card glass inner-card">
+                            <h4>🥾 Activity Needs</h4>
+                            <div class="checklist" id="packing-activity">
+                                <!-- Checkboxes populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            AeroRoute Travel Planner System • Designed with clean modular architecture
+        </div>
+    </footer>
+
+    <!-- JS Logic script -->
+    <script src="/app.js"></script>
+</body>
+</html>

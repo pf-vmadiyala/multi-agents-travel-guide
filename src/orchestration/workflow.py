@@ -12,6 +12,15 @@ from src.orchestration.agents.activity_agent import get_activities
 from src.orchestration.agents.restaurant_agent import get_restaurants
 from src.orchestration.agents.packing_agent import generate_packing_list
 
+from src.utils.metrics import agent_success_total, agent_failure_total
+
+def record_agent_metric(agent_name: str, result: Any):
+    """Increments agent execution success or failure counters."""
+    if isinstance(result, dict) and "error" in result:
+        agent_failure_total.labels(agent_name=agent_name).inc()
+    else:
+        agent_success_total.labels(agent_name=agent_name).inc()
+
 
 # ===== 1. DEFINE WORKFLOW STATE =====
 class ItineraryState(TypedDict):
@@ -65,6 +74,8 @@ async def weather_node(state: ItineraryState) -> dict:
         forecast = json.loads(forecast_raw)
     except Exception:
         forecast = {"error": "Failed to parse weather forecast JSON", "raw": forecast_raw}
+    
+    record_agent_metric("weather", forecast)
     return {"weather": forecast, "dates": dates}
 
 
@@ -75,6 +86,8 @@ async def safety_node(state: ItineraryState) -> dict:
         report = json.loads(report_raw)
     except Exception:
         report = {"error": "Failed to parse safety report JSON", "raw": report_raw}
+    
+    record_agent_metric("safety", report)
     return {"safety": report}
 
 
@@ -91,6 +104,8 @@ async def flights_node(state: ItineraryState) -> dict:
         flights = json.loads(flights_raw)
     except Exception:
         flights = {"error": "Failed to parse flights JSON", "raw": flights_raw}
+    
+    record_agent_metric("flights", flights)
     return {"flights": flights}
 
 
@@ -106,6 +121,8 @@ async def hotels_node(state: ItineraryState) -> dict:
         hotels = json.loads(hotels_raw)
     except Exception:
         hotels = {"error": "Failed to parse hotels JSON", "raw": hotels_raw}
+    
+    record_agent_metric("hotels", hotels)
     return {"hotels": hotels}
 
 
@@ -119,6 +136,8 @@ async def activities_node(state: ItineraryState) -> dict:
         activities = json.loads(activities_raw)
     except Exception:
         activities = {"error": "Failed to parse activities JSON", "raw": activities_raw}
+    
+    record_agent_metric("activities", activities)
     return {"activities": activities}
 
 
@@ -132,6 +151,8 @@ async def restaurants_node(state: ItineraryState) -> dict:
         restaurants = json.loads(restaurants_raw)
     except Exception:
         restaurants = {"error": "Failed to parse restaurants JSON", "raw": restaurants_raw}
+    
+    record_agent_metric("restaurants", restaurants)
     return {"restaurants": restaurants}
 
 
@@ -146,6 +167,8 @@ async def packing_node(state: ItineraryState) -> dict:
         packing = json.loads(packing_raw)
     except Exception:
         packing = {"error": "Failed to parse packing list JSON", "raw": packing_raw}
+    
+    record_agent_metric("packing", packing)
     return {"packing_list": packing}
 
 

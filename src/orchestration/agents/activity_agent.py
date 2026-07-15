@@ -1,5 +1,6 @@
 import json
 import httpx
+from typing import Any
 from langchain_core.tools import tool
 from langchain_core.prompts import ChatPromptTemplate
 from src.orchestration.agents.base import get_llm
@@ -27,12 +28,17 @@ Rules:
 4. Output ONLY the raw JSON array. Do not write conversational prefaces or conclusions. Do not wrap the JSON in markdown code blocks (like ```json). Just start with [ and end with ].
 """
 
-def clean_json_string(text: str) -> str:
+def clean_json_string(text: Any) -> str:
     """
     Finds the first opening bracket/brace and last closing bracket/brace
     in the text and extracts only the JSON string between them.
     This discards any conversational text written before or after the JSON.
     """
+    if isinstance(text, list):
+        text = "".join([block.get("text", "") if isinstance(block, dict) else str(block) for block in text])
+    elif not isinstance(text, str):
+        text = str(text)
+
     text = text.strip()
     
     first_bracket = text.find('[')
@@ -109,64 +115,100 @@ async def get_activities(location: str, interests: list[str]) -> str:
                 "list": "geosearch",
                 "gscoord": f"{lat}|{lon}",
                 "gsradius": 10000,  # 10km radius
-                "gslimit": 8,       # Get top 8 results (reduced from 15 to avoid LLM overload)
+                "gslimit": 8,       # Get top 8 results
                 "format": "json"
             }
-            geo_response = await client.get(wiki_api_url, params=geo_params, headers=headers, timeout=10.0)
-            geo_response.raise_for_status()
-            geo_data = geo_response.json()
-            #print("Wiki Geo Data: ", geo_data)
-            sights = geo_data.get("query", {}).get("geosearch", [])
-            if not sights:
-                return json.dumps([])
-
-            # Extract page IDs to query extracts
-            page_ids = [sight["pageid"] for sight in sights]
             
-            # 3. Query Wikipedia page summaries (Extracts) for the retrieved pages
-            extract_params = {
-                "action": "query",
-                "prop": "extracts",
-                "exintro": True,
-                "explaintext": True,
-                "pageids": "|".join(str(pid) for pid in page_ids),
-                "format": "json"
-            }
-            extract_response = await client.get(wiki_api_url, params=extract_params, headers=headers, timeout=10.0)
-            extract_response.raise_for_status()
-            extract_data = extract_response.json()
-            # print("Wiki Extract Data: ", extract_data)
-            pages_dict = extract_data.get("query", {}).get("pages", {})
-
-            # 4. Merge coordinates, title, and summaries
             curated_sights = []
-            for sight in sights:
-                page_id_str = str(sight["pageid"])
-                summary = pages_dict.get(page_id_str, {}).get("extract", "No description available.")
-                curated_sights.append({
-                    "title": sight["title"],
-                    "summary": summary[:120] + "...",  # Truncated to 120 chars to save context tokens
-                    "latitude": sight["lat"],
-                    "longitude": sight["lon"],
-                })
+            try:
+                geo_response = await client.get(wiki_api_url, params=geo_params, headers=headers, timeout=10.0)
+                geo_response.raise_for_status()
+                geo_data = geo_response.json()
+                sights = geo_data.get("query", {}).get("geosearch", [])
+                
+                if sights:
+                    # Extract page IDs to query extracts
+                    page_ids = [sight["pageid"] for sight in sights]
+                    
+                    # 3. Query Wikipedia page summaries (Extracts) for the retrieved pages
+                    extract_params = {
+                        "action": "query",
+                        "prop": "extracts",
+                        "exintro": True,
+                        "explaintext": True,
+                        "pageids": "|".join(str(pid) for pid in page_ids),
+                        "format": "json"
+                    }
+                    extract_response = await client.get(wiki_api_url, params=extract_params, headers=headers, timeout=10.0)
+                    extract_response.raise_for_status()
+                    extract_data = extract_response.json()
+                    pages_dict = extract_data.get("query", {}).get("pages", {})
+
+                    # 4. Merge coordinates, title, and summaries
+                    for sight in sights:
+                        page_id_str = str(sight["pageid"])
+                        summary = pages_dict.get(page_id_str, {}).get("extract", "No description available.")
+                        curated_sights.append({
+                            "title": sight["title"],
+                            "summary": summary[:120] + "...",  # Truncated to save tokens
+                            "latitude": sight["lat"],
+                            "longitude": sight["lon"],
+                        })
+            except Exception as wiki_err:
+                print(f"Warning: Wikipedia query failed ({str(wiki_err)}). Falling back to LLM internal knowledge.")
 
             # 5. Initialize LLM and prompt to filter/personalize activities
             llm = get_llm()
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", SYSTEM_PROMPT),
-                ("human", (
+            
+            if curated_sights:
+                system_prompt = SYSTEM_PROMPT
+                human_message = (
                     "Destination: {destination}\n"
                     "Traveler Interests: {interests}\n"
                     "Nearby Sight Options:\n{sights_json}\n"
-                ))
+                )
+            else:
+                system_prompt = (
+                    "You are an expert travel activity planner.\n"
+                    "Wikipedia data is currently unavailable. You must curate a personalized list of 3-5 famous landmarks, "
+                    "sightseeing activities, and sights directly from your own memory/knowledge that match the traveler's interests.\n"
+                    "Make sure to guess the coordinates (latitude and longitude) of these locations as accurately as possible.\n\n"
+                    "You must output your response in raw JSON format matching this exact structure:\n"
+                    "[\n"
+                    "  {{\n"
+                    "    \"name\": \"Sight Name\",\n"
+                    "    \"category\": \"Sight Category (e.g. Historic Temple, Nature Park, Art Museum)\",\n"
+                    "    \"description\": \"A short, engaging description of the sight.\",\n"
+                    "    \"latitude\": 35.7147,\n"
+                    "    \"longitude\": 139.7966,\n"
+                    "    \"matching_interest\": \"interest_name\",\n"
+                    "    \"why_recommended\": \"A brief explanation of why this matches their specific interest.\"\n"
+                    "  }}\n"
+                    "]\n"
+                    "Rules:\n"
+                    "1. Only suggest landmarks that match the traveler's interests.\n"
+                    "2. Output ONLY raw JSON. No markdown backticks, no markdown code blocks."
+                )
+                human_message = (
+                    "Destination: {destination}\n"
+                    "Traveler Interests: {interests}\n"
+                )
+
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", system_prompt),
+                ("human", human_message)
             ])
             
             chain = (prompt | llm).with_config({"run_name": "Activity_Curator"})
-            response = await chain.ainvoke({
+            
+            invoke_params = {
                 "destination": location,
                 "interests": ", ".join(interests),
-                "sights_json": json.dumps(curated_sights, indent=2)
-            })
+            }
+            if curated_sights:
+                invoke_params["sights_json"] = json.dumps(curated_sights, indent=2)
+                
+            response = await chain.ainvoke(invoke_params)
             
             content = getattr(response, "content", str(response))
             cleaned_content = clean_json_string(content)

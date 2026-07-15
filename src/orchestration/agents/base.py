@@ -35,6 +35,15 @@ def get_llm() -> BaseChatModel:
             model=model_name,
             temperature=0.2,
         )
+    elif provider == "xai":
+        from langchain_openai import ChatOpenAI
+        api_key = os.getenv("XAI_API_KEY")
+        return ChatOpenAI(
+            model_name=model_name,
+            base_url="https://api.x.ai/v1",
+            api_key=api_key,
+            temperature=0.2,
+        )
         
     elif provider in ("local", "ollama"):
         from langchain_openai import ChatOpenAI
