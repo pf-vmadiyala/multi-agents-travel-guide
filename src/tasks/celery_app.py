@@ -67,7 +67,17 @@ async def _async_orchestrate(
         
         # 1. Invoke the LangGraph Orchestrator
         # This will query weather, safety, flights, hotels, activities, and restaurants concurrently!
-        final_state = await travel_planner_app.ainvoke(inputs)
+        config = {
+            "run_name": f"{origin}-{destination}-{departure_date} to {return_date}",
+            "metadata": {
+                "trip_id": trip_id,
+                "origin": origin,
+                "destination": destination,
+                "departure_date": departure_date,
+                "return_date": return_date
+            }
+        }
+        final_state = await travel_planner_app.ainvoke(inputs, config=config)
         compiled_itinerary = final_state.get("compiled_itinerary")
         
         if not compiled_itinerary:
