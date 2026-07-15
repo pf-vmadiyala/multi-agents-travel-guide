@@ -12,6 +12,11 @@ const authSection = document.getElementById("auth-section");
 const plannerSection = document.getElementById("planner-section");
 const loadingSection = document.getElementById("loading-section");
 const dashboardSection = document.getElementById("dashboard-section");
+const myTripsSection = document.getElementById("my-trips-section");
+const myTripsBtn = document.getElementById("my-trips-btn");
+const tripsList = document.getElementById("trips-list");
+const noTrips = document.getElementById("no-trips");
+const backToPlannerBtn = document.getElementById("back-to-planner-btn");
 
 const loginForm = document.getElementById("login-form");
 const registerForm = document.getElementById("register-form");
@@ -60,6 +65,17 @@ function setupEventListeners() {
 
     // Logout
     logoutBtn.addEventListener("click", logout);
+
+    // My Trips
+    if (myTripsBtn) {
+        myTripsBtn.addEventListener("click", showMyTrips);
+    }
+    if (backToPlannerBtn) {
+        backToPlannerBtn.addEventListener("click", () => {
+            myTripsSection.classList.add("hidden");
+            plannerSection.classList.remove("hidden");
+        });
+    }
     
     // Back to Planner Form
     backToFormBtn.addEventListener("click", () => {
@@ -93,12 +109,14 @@ function updateAuthState() {
         plannerSection.classList.remove("hidden");
         userProfile.classList.remove("hidden");
         currentUsername.textContent = email;
+        myTripsSection.classList.add("hidden");
     } else {
         authSection.classList.remove("hidden");
         plannerSection.classList.add("hidden");
         userProfile.classList.add("hidden");
         dashboardSection.classList.add("hidden");
         loadingSection.classList.add("hidden");
+        myTripsSection.classList.add("hidden");
     }
 }
 
@@ -189,6 +207,88 @@ function logout() {
     if (pollInterval) clearInterval(pollInterval);
     if (pollTimer) clearInterval(pollTimer);
     updateAuthState();
+}
+
+// Submitting Itinerary Planning Request
+async function showMyTrips() {
+    plannerSection.classList.add("hidden");
+    dashboardSection.classList.add("hidden");
+    loadingSection.classList.add("hidden");
+    myTripsSection.classList.remove("hidden");
+    
+    tripsList.innerHTML = "";
+    noTrips.classList.add("hidden");
+    
+    try {
+        const response = await fetch(`${API_BASE}/trips`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+            throw new Error("Failed to fetch past trips.");
+        }
+        
+        const trips = await response.json();
+        if (trips.length === 0) {
+            noTrips.classList.remove("hidden");
+            return;
+        }
+        
+        trips.forEach(t => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.style.background = "rgba(15, 23, 42, 0.4)";
+            card.style.border = "1px solid rgba(45, 212, 191, 0.2)";
+            card.style.padding = "12px";
+            card.style.borderRadius = "8px";
+            card.style.cursor = "pointer";
+            card.style.transition = "transform 0.2s, border-color 0.2s";
+            
+            card.addEventListener("mouseenter", () => {
+                card.style.borderColor = "rgba(45, 212, 191, 0.6)";
+                card.style.transform = "translateY(-2px)";
+            });
+            card.addEventListener("mouseleave", () => {
+                card.style.borderColor = "rgba(45, 212, 191, 0.2)";
+                card.style.transform = "none";
+            });
+            
+            const statusClass = t.status === "completed" ? "text-success" : (t.status === "failed" ? "text-danger" : "text-warning");
+            const statusLabel = t.status.toUpperCase();
+            
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <strong style="color: #2dd4bf; font-size: 14px;">${t.destination}</strong>
+                    <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3);" class="${statusClass}">${statusLabel}</span>
+                </div>
+                <div style="font-size: 12px; color: #94a3b8; display: flex; gap: 15px;">
+                    <span>Date: ${t.start_date}</span>
+                    <span>Days: ${t.duration_days}</span>
+                    <span>Budget: $${t.budget_usd}</span>
+                </div>
+            `;
+            
+            card.addEventListener("click", () => {
+                if (t.status === "completed") {
+                    myTripsSection.classList.add("hidden");
+                    loadingSection.classList.remove("hidden");
+                    resetStatusTracker();
+                    document.getElementById("timer-val").textContent = "-";
+                    loadCompletedPlan(t.trip_id);
+                } else if (t.status === "planning") {
+                    myTripsSection.classList.add("hidden");
+                    loadingSection.classList.remove("hidden");
+                    startPolling(t.trip_id);
+                } else {
+                    alert(`This trip plan has status '${t.status}'. You can select it and try to re-plan inside the details, or plan a new one.`);
+                }
+            });
+            
+            tripsList.appendChild(card);
+        });
+    } catch (err) {
+        tripsList.innerHTML = `<div class="error-alert">${err.message}</div>`;
+    }
 }
 
 // Submitting Itinerary Planning Request

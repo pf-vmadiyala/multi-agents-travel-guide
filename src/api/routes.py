@@ -136,6 +136,27 @@ async def get_trip_status(
     return TripStatusResponse(trip_id=trip_id, status=trip.status)
 
 
+@router.get("/trips")
+async def get_user_trips(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Retrieve all trips owned by the authenticated user."""
+    trips = await crud.get_trips_by_user(db, current_user.user_id)
+    return [
+        {
+            "trip_id": str(t.trip_id),
+            "destination": t.destination,
+            "start_date": str(t.start_date),
+            "duration_days": t.duration_days,
+            "budget_usd": float(t.budget_usd),
+            "status": t.status,
+            "created_at": t.created_at.isoformat() if t.created_at else None
+        }
+        for t in trips
+    ]
+
+
 @router.get("/trips/{trip_id}")
 async def get_completed_itinerary(
     trip_id: uuid.UUID,

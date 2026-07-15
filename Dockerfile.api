@@ -1,0 +1,33 @@
+# Dockerfile.api
+FROM python:3.13-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
+
+# Install system dependencies (needed to build native compiled wheels like asyncpg/greenlet if needed)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+
+# Install python dependencies from pyproject.toml
+COPY pyproject.toml .
+RUN pip install --no-cache-dir .
+
+# Copy application source code
+COPY src/ src/
+
+# Expose FastAPI server port
+EXPOSE 8000
+
+# Start Uvicorn
+CMD ["uvicorn", "src.api.app:app", "--host", "0.0.0.0", "--port", "8000"]

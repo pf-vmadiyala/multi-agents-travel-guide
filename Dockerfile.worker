@@ -1,0 +1,30 @@
+# Dockerfile.worker
+FROM python:3.13-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+
+# Install python dependencies
+COPY pyproject.toml .
+RUN pip install --no-cache-dir .
+
+# Copy application source code
+COPY src/ src/
+
+# Start Celery Worker (set concurrency to match target EKS resource limits)
+CMD ["celery", "-A", "src.tasks.celery_app", "worker", "--loglevel=info", "--concurrency=4"]

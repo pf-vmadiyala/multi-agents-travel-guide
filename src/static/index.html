@@ -23,6 +23,7 @@
             </div>
             <div id="user-profile" class="hidden">
                 <span id="current-username">user@example.com</span>
+                <button id="my-trips-btn" class="btn btn-secondary btn-sm" style="margin-right: 8px;">My Trips</button>
                 <button id="logout-btn" class="btn btn-secondary btn-sm">Sign Out</button>
             </div>
         </div>
@@ -181,6 +182,23 @@
                     <span class="btn-icon">✦</span> Generate AI Travel Plan
                 </button>
             </form>
+        </section>
+
+        <!-- 2.5. MY SAVED TRIPS PANEL -->
+        <section id="my-trips-section" class="card glass hidden">
+            <div class="planner-header">
+                <h1>My Saved Trips</h1>
+                <p>Browse and access your past compiled travel plans.</p>
+            </div>
+            <div id="trips-list" class="trips-list" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Dynamically populated cards -->
+            </div>
+            <div id="no-trips" class="hidden" style="text-align: center; padding: 20px 0; color: #94a3b8;">
+                No travel plans saved yet. Create a new one to get started!
+            </div>
+            <div style="margin-top: 15px;">
+                <button id="back-to-planner-btn" class="btn btn-secondary w-100">← Back to Planner</button>
+            </div>
         </section>
 
         <!-- 3. LOADER & STATUS SCREEN -->
