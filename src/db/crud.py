@@ -9,18 +9,21 @@ from src.db.models import User, Trip, Flight, Hotel, Activity, Restaurant, CostS
 
 # ===== USER CRUD =====
 async def get_user_by_email(session: AsyncSession, email: str) -> Optional[User]:
+    """Fetch a user by their email address, or None if not found."""
     stmt = select(User).where(User.email == email)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 
 
 async def get_user_by_id(session: AsyncSession, user_id: uuid.UUID) -> Optional[User]:
+    """Fetch a user by their UUID, or None if not found."""
     stmt = select(User).where(User.user_id == user_id)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 
 
 async def create_user(session: AsyncSession, email: str, password_hash: str) -> User:
+    """Create and flush a new user record with the given email and hashed password."""
     new_user = User(email=email, password_hash=password_hash)
     session.add(new_user)
     await session.flush()
@@ -29,18 +32,21 @@ async def create_user(session: AsyncSession, email: str, password_hash: str) -> 
 
 # ===== TRIP CRUD =====
 async def get_trip(session: AsyncSession, trip_id: uuid.UUID) -> Optional[Trip]:
+    """Fetch a trip by its UUID, or None if not found."""
     stmt = select(Trip).where(Trip.trip_id == trip_id)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 
 
 async def get_trips_by_user(session: AsyncSession, user_id: uuid.UUID) -> List[Trip]:
+    """Fetch all trips belonging to a user, most recently created first."""
     stmt = select(Trip).where(Trip.user_id == user_id).order_by(Trip.created_at.desc())
     result = await session.execute(stmt)
     return list(result.scalars().all())
 
 
 async def update_trip_status(session: AsyncSession, trip_id: uuid.UUID, status: str, completed: bool = False) -> None:
+    """Update a trip's status, optionally stamping completed_at with the current time."""
     update_data = {"status": status}
     if completed:
         update_data["completed_at"] = datetime.now()
@@ -60,6 +66,7 @@ async def create_trip(
     party_size: int = 1,
     idempotency_key: Optional[str] = None
 ) -> Trip:
+    """Create a new trip, returning the existing trip instead if the idempotency key was already used by this user."""
     # 1. Enforce Idempotency constraint: Check if this user already submitted this key
     if idempotency_key:
         stmt = select(Trip).where(Trip.user_id == user_id, Trip.idempotency_key == idempotency_key)
@@ -241,6 +248,7 @@ async def log_agent_execution(
     result_json: Optional[Dict[str, Any]] = None,
     error_msg: Optional[str] = None
 ) -> AgentExecution:
+    """Create and flush an execution log record for a specialist agent run."""
     new_log = AgentExecution(
         trip_id=trip_id,
         agent_name=agent_name,

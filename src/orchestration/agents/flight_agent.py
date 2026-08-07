@@ -179,6 +179,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def test_agent():
+        """Standalone test that fetches curated flight options for a sample route."""
         origin = "Chicago"
         destination = "Tokyo, Japan"
         preferences = ["direct", "economy"]

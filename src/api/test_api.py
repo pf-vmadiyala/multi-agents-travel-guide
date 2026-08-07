@@ -9,6 +9,7 @@ from src.db.models import User, Trip
 API_URL = "http://localhost:8000/api/v1"
 
 async def test_flow():
+    """Run an end-to-end REST API integration test: register, login, plan a trip, poll, and verify results."""
     print("\n==================================================")
     print("      STARTING REST API END-TO-END INTEGRATION   ")
     print("==================================================\n")

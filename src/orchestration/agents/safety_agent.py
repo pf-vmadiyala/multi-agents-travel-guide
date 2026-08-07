@@ -151,6 +151,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def test_agent():
+        """Standalone test that generates safety reports for a couple of sample destinations."""
         # Test an Asian country (Japan) and an African country (Kenya)
         test_destinations = ["Tokyo, Japan", "Nairobi, Kenya"]
         

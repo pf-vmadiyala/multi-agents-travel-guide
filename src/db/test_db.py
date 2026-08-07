@@ -68,6 +68,7 @@ MOCK_ITINERARY = {
 }
 
 async def run_validation():
+    """Run an end-to-end validation of DB writes, idempotency, PostGIS queries, and Redis caching, then clean up."""
     print("\n==================================================")
     print("      STARTING DB & CACHE END-TO-END VALIDATION   ")
     print("==================================================\n")

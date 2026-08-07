@@ -27,6 +27,7 @@ app.add_middleware(
 # Middleware to track request count and latency
 @app.middleware("http")
 async def prometheus_middleware(request: Request, call_next):
+    """Record request count and latency metrics for non-health/metrics endpoints."""
     path = request.url.path
     # Skip tracking for metrics and health probes to avoid metric pollution
     if path in ("/metrics", "/api/v1/health/live", "/api/v1/health/ready", "/"):
@@ -69,6 +70,7 @@ from fastapi.staticfiles import StaticFiles
 # Expose /metrics endpoint for Prometheus scraping
 @app.get("/metrics")
 async def get_metrics():
+    """Expose Prometheus metrics in the standard text exposition format."""
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 # Include API endpoints under /api/v1 prefix

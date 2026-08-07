@@ -4,9 +4,11 @@ from typing import List, Dict, Any, Optional
 
 # ===== 1. Stub Flight Search Provider =====
 class StubFlightProvider:
+    """Mock flight search provider returning static sample flight options."""
     async def search_flights(
         self, origin: str, destination: str, departure_date: str, return_date: str, preferences: List[str]
     ) -> Dict[str, Any]:
+        """Return a static set of sample flight options for the given route."""
         await asyncio.sleep(0.1)  # Simulate network latency
         return {
             "origin_iata": origin.upper()[:3],
@@ -50,9 +52,11 @@ class StubFlightProvider:
 
 # ===== 2. Stub Hotel Search Provider =====
 class StubHotelProvider:
+    """Mock hotel search provider returning static sample lodging options."""
     async def search_hotels(
         self, lat: float, lon: float, check_in: str, check_out: str, preferences: List[str]
     ) -> List[Dict[str, Any]]:
+        """Return a static set of sample hotel options for the given coordinates and stay length."""
         await asyncio.sleep(0.1)
         # Calculates days of stay
         try:
@@ -89,9 +93,11 @@ class StubHotelProvider:
 
 # ===== 3. Stub Activity Provider =====
 class StubActivityProvider:
+    """Mock activity search provider returning static sample activities."""
     async def search_activities(
         self, lat: float, lon: float, interests: List[str]
     ) -> List[Dict[str, Any]]:
+        """Return a static set of sample activities for the given coordinates."""
         await asyncio.sleep(0.1)
         return [
             {
@@ -118,9 +124,11 @@ class StubActivityProvider:
 
 # ===== 4. Stub Restaurant Provider =====
 class StubRestaurantProvider:
+    """Mock restaurant search provider returning static sample dining options."""
     async def search_restaurants(
         self, lat: float, lon: float, cuisines: List[str]
     ) -> List[Dict[str, Any]]:
+        """Return a static set of sample restaurant options for the given coordinates."""
         await asyncio.sleep(0.1)
         return [
             {
@@ -147,7 +155,9 @@ class StubRestaurantProvider:
 
 # ===== 5. Stub Weather Provider =====
 class StubWeatherProvider:
+    """Mock weather provider returning a static alternating forecast."""
     async def get_forecast(self, lat: float, lon: float) -> List[Dict[str, Any]]:
+        """Return a static 8-day weather forecast for the given coordinates."""
         await asyncio.sleep(0.1)
         # Returns static 8-day forecast
         today = datetime.now()
@@ -167,7 +177,9 @@ class StubWeatherProvider:
 
 # ===== 6. Stub Safety Provider =====
 class StubSafetyProvider:
+    """Mock safety provider returning a static low-risk advisory report."""
     async def get_safety_report(self, country_code: str) -> Dict[str, Any]:
+        """Return a static safety advisory report for the given country code."""
         await asyncio.sleep(0.1)
         return {
             "destination": f"Country code: {country_code.upper()}",
@@ -182,7 +194,9 @@ class StubSafetyProvider:
 
 # ===== 7. Stub Maps Provider =====
 class StubMapsProvider:
+    """Mock maps provider returning a static geocoded coordinate."""
     async def geocode(self, location_name: str) -> Optional[Dict[str, Any]]:
+        """Return a static mock coordinate regardless of the requested location name."""
         await asyncio.sleep(0.1)
         # Standard mock coordinates for testing
         return {

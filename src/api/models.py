@@ -38,6 +38,7 @@ class TripPlanRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_dates(self) -> "TripPlanRequest":
+        """Validate that departure/return dates are sane and the trip duration doesn't exceed 30 days."""
         # 1. Enforce that departure date is today or in the future
         if self.departure_date < date.today():
             raise ValueError("Departure date cannot be in the past.")
@@ -55,6 +56,7 @@ class TripPlanRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_interests(self) -> "TripPlanRequest":
+        """Validate that all requested interests are in the approved whitelist."""
         # Check all interests are inside the approved whitelist
         invalid_interests = [i for i in self.interests if i.lower() not in APPROVED_INTERESTS]
         if invalid_interests:

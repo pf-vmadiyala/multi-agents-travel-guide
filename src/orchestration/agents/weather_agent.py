@@ -139,6 +139,7 @@ async def get_weather_forecast(location: str, dates: list[str]) -> str:
 
 if __name__ == "__main__":
     async def test_tool():
+        """Standalone test that fetches the weather forecast for Tokyo over two upcoming days."""
         next_week_start_str = (datetime.now() + timedelta(days=6)).strftime("%Y-%m-%d")
         next_week_day_two_str = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
         dates_to_check = [next_week_start_str, next_week_day_two_str]

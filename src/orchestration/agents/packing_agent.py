@@ -91,6 +91,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def test_agent():
+        """Standalone test that generates a packing list for a sample destination and rainy forecast."""
         # 1. Sample inputs
         destination = "Tokyo, Japan"
         interests = ["hiking", "anime", "nightlife"]

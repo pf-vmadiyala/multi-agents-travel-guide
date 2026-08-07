@@ -23,6 +23,7 @@ from src.db.session import Base
 
 # ===== 1. USERS MODEL =====
 class User(Base):
+    """Registered user account with credentials and their planned trips."""
     __tablename__ = "users"
 
     user_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -37,6 +38,7 @@ class User(Base):
 
 # ===== 2. TRIPS MODEL =====
 class Trip(Base):
+    """A single travel plan request and its planning status, linked to a user and all its itinerary components."""
     __tablename__ = "trips"
 
     trip_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -76,6 +78,7 @@ class Trip(Base):
 
 # ===== 3. FLIGHTS MODEL =====
 class Flight(Base):
+    """A flight option recommended for a trip."""
     __tablename__ = "flights"
 
     flight_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -97,6 +100,7 @@ class Flight(Base):
 
 # ===== 4. HOTELS MODEL =====
 class Hotel(Base):
+    """A hotel or lodging option recommended for a trip."""
     __tablename__ = "hotels"
 
     hotel_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -119,6 +123,7 @@ class Hotel(Base):
 
 # ===== 5. ACTIVITIES MODEL =====
 class Activity(Base):
+    """A curated activity or sightseeing item recommended for a trip."""
     __tablename__ = "activities"
 
     activity_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -143,6 +148,7 @@ class Activity(Base):
 
 # ===== 6. RESTAURANTS MODEL =====
 class Restaurant(Base):
+    """A curated restaurant or dining option recommended for a trip."""
     __tablename__ = "restaurants"
 
     restaurant_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -168,6 +174,7 @@ class Restaurant(Base):
 
 # ===== 7. AGENT EXECUTION LOGS MODEL =====
 class AgentExecution(Base):
+    """Execution log for a single specialist agent run within a trip's planning workflow."""
     __tablename__ = "agent_executions"
 
     execution_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -187,6 +194,7 @@ class AgentExecution(Base):
 
 # ===== 8. COST SUMMARIES MODEL =====
 class CostSummary(Base):
+    """Aggregated cost breakdown and budget utilization for a trip."""
     __tablename__ = "cost_summaries"
 
     summary_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

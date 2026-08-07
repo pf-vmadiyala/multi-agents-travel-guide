@@ -31,6 +31,7 @@ Base = declarative_base()
 
 # Async database session generator dependency
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """FastAPI dependency that yields a DB session, committing on success and rolling back on error."""
     async with AsyncSessionLocal() as session:
         try:
             yield session

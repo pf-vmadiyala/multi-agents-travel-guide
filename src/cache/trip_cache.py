@@ -9,6 +9,7 @@ class TripCache:
     and polling status of in-progress travel plans.
     """
     def __init__(self):
+        """Initialize the async Redis client from the REDIS_URL environment variable."""
         # Load Redis connection URL from environment (defaults to DB 0)
         self.redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
         self.client = redis.from_url(self.redis_url, decode_responses=True)

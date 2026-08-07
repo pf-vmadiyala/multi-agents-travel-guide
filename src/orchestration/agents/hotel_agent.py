@@ -220,6 +220,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def test_agent():
+        """Standalone test that fetches curated hotel options for a sample destination."""
         destination = "Broken Bow, Oklahoma"
         preferences = ["nature", "luxury", "cabin"]
         check_in = "2026-07-20"

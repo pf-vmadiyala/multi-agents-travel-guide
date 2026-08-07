@@ -204,6 +204,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def test_agent():
+        """Standalone test that fetches curated restaurant options for a sample destination."""
         # Test interests matching Tokyo
         destination = "Broken Bow, Oklahoma"
         cuisines = ["pizza", "burgers", "coffee", "bbq", "mexican"]

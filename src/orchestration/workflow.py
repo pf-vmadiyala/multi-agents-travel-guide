@@ -24,6 +24,7 @@ def record_agent_metric(agent_name: str, result: Any):
 
 # ===== 1. DEFINE WORKFLOW STATE =====
 class ItineraryState(TypedDict):
+    """LangGraph state schema carrying trip inputs, per-agent outputs, and the compiled itinerary."""
     # Inputs
     destination: str
     origin: str
@@ -52,6 +53,7 @@ class ItineraryState(TypedDict):
 
 # ===== HELPER: GENERATE DATES IN RANGE =====
 def get_dates_in_range(start_str: str, end_str: str) -> List[str]:
+    """Generate a list of ISO date strings for every day between start and end, inclusive."""
     try:
         start = datetime.strptime(start_str.strip(), "%Y-%m-%d")
         end = datetime.strptime(end_str.strip(), "%Y-%m-%d")
@@ -63,6 +65,7 @@ def get_dates_in_range(start_str: str, end_str: str) -> List[str]:
 
 # ===== 2. DEFINE NODE FUNCTIONS =====
 async def weather_node(state: ItineraryState) -> dict:
+    """LangGraph node that fetches the weather forecast and computes the trip date range."""
     print("-> Running Weather Agent...")
     dates = get_dates_in_range(state["departure_date"], state["return_date"])
     # Open-Meteo limit is 14 days
@@ -80,6 +83,7 @@ async def weather_node(state: ItineraryState) -> dict:
 
 
 async def safety_node(state: ItineraryState) -> dict:
+    """LangGraph node that fetches the destination safety advisory report."""
     print("-> Running Safety Agent...")
     report_raw = await generate_safety_report(state["destination"])
     try:
@@ -92,6 +96,7 @@ async def safety_node(state: ItineraryState) -> dict:
 
 
 async def flights_node(state: ItineraryState) -> dict:
+    """LangGraph node that fetches curated flight options."""
     print("-> Running Flight Agent...")
     flights_raw = await get_flights.ainvoke({
         "origin": state["origin"],
@@ -110,6 +115,7 @@ async def flights_node(state: ItineraryState) -> dict:
 
 
 async def hotels_node(state: ItineraryState) -> dict:
+    """LangGraph node that fetches curated hotel options."""
     print("-> Running Hotel Agent...")
     hotels_raw = await get_hotels.ainvoke({
         "location": state["destination"],
@@ -127,6 +133,7 @@ async def hotels_node(state: ItineraryState) -> dict:
 
 
 async def activities_node(state: ItineraryState) -> dict:
+    """LangGraph node that fetches curated activities."""
     print("-> Running Activity Agent...")
     activities_raw = await get_activities.ainvoke({
         "location": state["destination"],
@@ -142,6 +149,7 @@ async def activities_node(state: ItineraryState) -> dict:
 
 
 async def restaurants_node(state: ItineraryState) -> dict:
+    """LangGraph node that fetches curated restaurant options."""
     print("-> Running Restaurant Agent...")
     restaurants_raw = await get_restaurants.ainvoke({
         "location": state["destination"],
@@ -157,6 +165,7 @@ async def restaurants_node(state: ItineraryState) -> dict:
 
 
 async def packing_node(state: ItineraryState) -> dict:
+    """LangGraph node that generates a packing list from the weather forecast, run after the weather node."""
     print("-> Running Packing Agent (Dependent on Weather)...")
     packing_raw = await generate_packing_list(
         destination=state["destination"],
@@ -173,6 +182,7 @@ async def packing_node(state: ItineraryState) -> dict:
 
 
 async def compile_itinerary_node(state: ItineraryState) -> dict:
+    """LangGraph node that merges all agent outputs into the final compiled itinerary."""
     print("-> Compiling final itinerary...")
     compiled = {
         "destination": state["destination"],
@@ -233,6 +243,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def run_test_planner():
+        """Run the compiled travel planner graph against a sample trip and print the result."""
         inputs = {
             "destination": "Broken Bow, Oklahoma",
             "origin": "Chicago",
