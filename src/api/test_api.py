@@ -5,6 +5,9 @@ from datetime import date, timedelta
 from sqlalchemy import select
 from src.db.session import AsyncSessionLocal
 from src.db.models import User, Trip
+import pytest
+pytestmark = pytest.mark.e2e
+
 
 API_URL = "http://localhost:8000/api/v1"
 

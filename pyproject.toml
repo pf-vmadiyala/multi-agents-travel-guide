@@ -40,3 +40,5 @@ dev = [
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+markers = ["e2e: needs a running server and database"]
+addopts = "-m 'not e2e'"

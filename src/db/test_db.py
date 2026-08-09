@@ -7,6 +7,8 @@ from src.db.session import AsyncSessionLocal, engine
 from src.db.models import User, Trip, Hotel, Restaurant, Flight, Activity, CostSummary
 import src.db.crud as crud
 from src.cache.trip_cache import TripCache
+import pytest
+pytestmark = pytest.mark.e2e
 
 from dotenv import load_dotenv
 load_dotenv()
