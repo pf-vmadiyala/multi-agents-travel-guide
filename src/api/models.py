@@ -39,6 +39,8 @@ class TripPlanRequest(BaseModel):
     @model_validator(mode="after")
     def validate_dates(self) -> "TripPlanRequest":
         """Validate that departure/return dates are sane and the trip duration doesn't exceed 30 days."""
+        if self.departure_date is None or self.return_date is None:
+            raise ValueError("Both departure_date and return_date are required.")
         # 1. Enforce that departure date is today or in the future
         if self.departure_date < date.today():
             raise ValueError("Departure date cannot be in the past.")
