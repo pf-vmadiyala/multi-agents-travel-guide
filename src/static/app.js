@@ -266,6 +266,10 @@ async function showMyTrips() {
                     <span>Days: ${t.duration_days}</span>
                     <span>Budget: $${t.budget_usd}</span>
                 </div>
+                <div style="margin-top: 8px; display: flex; gap: 10px; font-size: 16px;">
+                    <span title="Email">✉️</span>
+                    <span title="Download">⬇️</span>
+                </div>
             `;
             
             card.addEventListener("click", () => {
