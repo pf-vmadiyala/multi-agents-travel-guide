@@ -57,7 +57,7 @@ def get_dates_in_range(start_str: str, end_str: str) -> List[str]:
     try:
         start = datetime.strptime(start_str.strip(), "%Y-%m-%d")
         end = datetime.strptime(end_str.strip(), "%Y-%m-%d")
-        delta = (end - start).days
+        delta = abs((end - start).days)
         return [(start + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(delta + 1)]
     except Exception:
         return [start_str, end_str]
