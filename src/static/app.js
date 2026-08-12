@@ -258,7 +258,7 @@ async function showMyTrips() {
             
             card.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <strong style="color: #2dd4bf; font-size: 14px;">${t.destination}</strong>
+                    <strong style="color: #2dd4bf; font-size: 14px;">${t.destination} ↗</strong>
                     <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3);" class="${statusClass}">${statusLabel}</span>
                 </div>
                 <div style="font-size: 12px; color: #94a3b8; display: flex; gap: 15px;">
