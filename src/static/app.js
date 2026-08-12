@@ -260,6 +260,7 @@ async function showMyTrips() {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                     <strong style="color: #2dd4bf; font-size: 14px;">${t.destination}</strong>
                     <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3);" class="${statusClass}">${statusLabel}</span>
+                    <span style="margin-left: 8px; font-size: 14px; cursor: default;">🔗</span>
                 </div>
                 <div style="font-size: 12px; color: #94a3b8; display: flex; gap: 15px;">
                     <span>Date: ${t.start_date}</span>
