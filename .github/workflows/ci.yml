@@ -1,6 +1,10 @@
 # 1. Give your workflow a name displayed in the GitHub Actions UI
 name: Continuous Integration & Deployment
 
+permissions:
+  id-token: write
+  contents: read
+
 # 2. Define the TRIGGERS (When should this script run?)
 on:
   push:
