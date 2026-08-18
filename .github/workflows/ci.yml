@@ -4,13 +4,13 @@ name: Continuous Integration & Deployment
 # 2. Define the TRIGGERS (When should this script run?)
 on:
   push:
-    branches: [ main ]          # Run when code is merged into main
+    branches: [main] # Run when code is merged into main
   pull_request:
-    branches: [ main ]          # Run when a developer opens a Pull Request against main
+    branches: [main] # Run when a developer opens a Pull Request against main
+  workflow_dispatch: # Allows you to manually trigger the workflow from GitHub UI
 
 # 3. Define the JOBS (What tasks need to run?)
 jobs:
-
   # --- JOB 1: RUN THE TEST SUITE ---
   test:
     name: Run Python Test Suite
@@ -66,11 +66,10 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           CELERY_BROKER_URL: redis://localhost:6379/1
 
-
   # --- JOB 2: BUILD DOCKER IMAGES & DEPLOY (Only on merges to main) ---
   build-and-push:
     name: Build & Push Images
-    needs: test                 # This job will ONLY start if the 'test' job completes successfully!
+    needs: test # This job will ONLY start if the 'test' job completes successfully!
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' # Only run on merges to main
     runs-on: ubuntu-latest
 
@@ -111,15 +110,15 @@ jobs:
       - name: Checkout GitOps Repo
         uses: actions/checkout@v4
         with:
-          repository: aiorg/travel-planner-gitops  # <-- Swap with your GitHub Org/Repo name
-          token: ${{ secrets.GITOPS_REPO_PAT }}      # <-- GitHub PAT Token to allow writing to the separate repo
-          path: gitops-repo                          # Clones it into a folder named 'gitops-repo'
+          repository: aiorg/travel-planner-gitops # <-- Swap with your GitHub Org/Repo name
+          token: ${{ secrets.GITOPS_REPO_PAT }} # <-- GitHub PAT Token to allow writing to the separate repo
+          path: gitops-repo # Clones it into a folder named 'gitops-repo'
 
       # Step G: Find-and-replace the old image tags with the new Git SHA inside the GitOps YAMLs
       - name: Update Image Tags in GitOps Manifests
         run: |
           cd gitops-repo/manifests/travel-planner
-          
+
           # Replace the image tag in deployment files using sed
           sed -i "s|image: .*/travel-planner-api:.*|image: ${{ steps.login-ecr.outputs.registry }}/travel-planner-api:${{ env.IMAGE_TAG }}|g" deployment.yaml
           sed -i "s|image: .*/travel-planner-worker:.*|image: ${{ steps.login-ecr.outputs.registry }}/travel-planner-worker:${{ env.IMAGE_TAG }}|g" deployment-worker.yaml
