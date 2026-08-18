@@ -102,42 +102,34 @@ jobs:
       - name: Set Image Tag (Git SHA)
         run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      # Step D: Build & Push the Uvicorn API image
-      - name: Build & Push API Image
+      # Step D: Build & Push the unified Docker image
+      - name: Build & Push Unified Image
         run: |
-          docker build -t ${{ steps.login-ecr.outputs.registry }}/travel-planner-api:$IMAGE_TAG -f Dockerfile.api .
-          docker push ${{ steps.login-ecr.outputs.registry }}/travel-planner-api:$IMAGE_TAG
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/travel-planner/app:$IMAGE_TAG -f Dockerfile.api .
+          docker push ${{ steps.login-ecr.outputs.registry }}/travel-planner/app:$IMAGE_TAG
 
-      # Step E: Build & Push the Celery Worker image
-      - name: Build & Push Worker Image
-        run: |
-          docker build -t ${{ steps.login-ecr.outputs.registry }}/travel-planner-worker:$IMAGE_TAG -f dockerfile.worker .
-          docker push ${{ steps.login-ecr.outputs.registry }}/travel-planner-worker:$IMAGE_TAG
-
-      # Step F: Clone your separate GitOps repository to update the deployment manifests
+      # Step E: Clone your separate GitOps repository to update the deployment manifests
       - name: Checkout GitOps Repo
         uses: actions/checkout@v4
         with:
-          repository: aiorg/travel-planner-gitops # <-- Swap with your GitHub Org/Repo name
-          token: ${{ secrets.GITOPS_REPO_PAT }} # <-- GitHub PAT Token to allow writing to the separate repo
-          path: gitops-repo # Clones it into a folder named 'gitops-repo'
+          repository: pf-vmadiyala/agentic-travelplanr-gitops
+          token: ${{ secrets.GITOPS_REPO_PAT }}
+          path: gitops-repo
 
-      # Step G: Find-and-replace the old image tags with the new Git SHA inside the GitOps YAMLs
+      # Step F: Find-and-replace the old image tags with the new Git SHA inside the GitOps YAMLs
       - name: Update Image Tags in GitOps Manifests
         run: |
-          cd gitops-repo/manifests/travel-planner
+          cd gitops-repo
+          sed -i "s|image: .*/travel-planner/app:.*|image: ${{ steps.login-ecr.outputs.registry }}/travel-planner/app:${{ env.IMAGE_TAG }}|g" manifests/travel-planner/deployment.yaml
+          sed -i "s|image: .*/travel-planner/app:.*|image: ${{ steps.login-ecr.outputs.registry }}/travel-planner/app:${{ env.IMAGE_TAG }}|g" manifests/celery-workers/deployment.yaml
 
-          # Replace the image tag in deployment files using sed
-          sed -i "s|image: .*/travel-planner-api:.*|image: ${{ steps.login-ecr.outputs.registry }}/travel-planner-api:${{ env.IMAGE_TAG }}|g" deployment.yaml
-          sed -i "s|image: .*/travel-planner-worker:.*|image: ${{ steps.login-ecr.outputs.registry }}/travel-planner-worker:${{ env.IMAGE_TAG }}|g" deployment-worker.yaml
-
-      # Step H: Commit the image tag change back to the GitOps repository.
+      # Step G: Commit the image tag change back to the GitOps repository.
       # ArgoCD will detect this commit and roll out the new version automatically!
       - name: Commit and Push to GitOps Repo
         run: |
           cd gitops-repo
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git add manifests/travel-planner/
+          git add manifests/
           git commit -m "chore: deploy travel-planner version ${{ env.IMAGE_TAG }} [skip ci]"
           git push origin main
