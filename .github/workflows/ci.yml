@@ -90,8 +90,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::186224145882:role/git-oidc
-          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::138257835519:role/git-oidc
+          aws-region: us-east-2
 
       # Step B: Log in to Amazon Elastic Container Registry (ECR)
       - name: Log in to Amazon ECR
